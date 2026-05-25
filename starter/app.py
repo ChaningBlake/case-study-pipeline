@@ -5,6 +5,7 @@ import logging
 import sys
 from uuid import uuid4
 from datetime import datetime, timezone
+import requests
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).parents[1] # ../../.
@@ -15,6 +16,15 @@ logger = logging.getLogger(__name__)
 ASSETS = []
 PLATFORMS = []
 DELIVERY_JOBS = []
+
+
+VALID_TRANSITIONS = {
+    ("queued", "processing"),
+    ("processing", "delivered"),
+    ("processing", "failed"),
+}
+# Pull distinct states from VALID_TRANSITIONS
+VALID_STATES = {state for pair in VALID_TRANSITIONS for state in pair}
 
 # --- HElPER FUNCTIONS ---
 def load_seed_data():
@@ -145,6 +155,32 @@ def create_delivery_job(asset_id, platform_id):
 def get_asset_by_id(asset_id):
     return next(filter(lambda x: x["id"] == asset_id, ASSETS), None)
 
+def get_job_by_id(job_id):
+    return next(filter(lambda x: x["id"] == job_id, DELIVERY_JOBS), None)
+
+def get_platform_by_id(platform_id):
+    return next(filter(lambda x: x["id"] == platform_id, PLATFORMS), None)
+
+def post_webhook(webhook_url, payload):
+    if not webhook_url:
+        return
+
+    try:
+        logger.info(f"Attempting post to {webhook_url}")
+        response = requests.post(
+            webhook_url, 
+            json=payload, 
+            headers={'Content-Type': 'application/json'},
+            timeout=3
+        )
+
+        response.raise_for_status() 
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error posting {webhook_url}: {str(e)}")
+        return
+    
+
 # --- ROUTES ---
 @app.route("/api/assets", methods=["GET"])
 def get_assets():
@@ -186,6 +222,7 @@ def register_asset():
 
 @app.route("/api/assets/<asset_id>/route", methods=["POST"])
 def route_asset(asset_id):
+    logger.info(f"Routing asset {asset_id}")
     asset = get_asset_by_id(asset_id)
     if not asset:
         return jsonify({"error": "Asset not found"}), 404
@@ -201,10 +238,59 @@ def route_asset(asset_id):
 
 @app.route("/api/jobs/<job_id>/status", methods=["PUT"])
 def update_job_status(job_id):
-    return
+    logger.info("Updating job status")
+    body = request.get_json()
+    status = body.get("status")
+    job = get_job_by_id(job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    
+    if status not in VALID_STATES:
+        return jsonify({"error": f"{status} is not a valid status: {VALID_STATES}"})
+    if (job["status"], status) not in VALID_TRANSITIONS:
+        return jsonify({"error": f"Transition from {job['status']} to {status} not permitted"})
+
+    # Validated new_status, safe to update
+    job["status"] = status
+
+    # Post to webhook for terminal state
+    if status in ("delivered", "failed"):
+        payload = {
+            "job_id": job["id"],
+            "asset_id": job["asset_id"],
+            "platform_id": job["platform_id"],
+            "status": status
+        }
+        platform = get_platform_by_id(job["platform_id"]) 
+        post_webhook(platform["webhook_url"], payload)
+
+    return jsonify(job), 200
 
 @app.route("/api/stats", methods=["GET"])
 def get_stats():
+    logger.info("Aggregating Stats")
+    asset_statuses = ["ingested", "qc_pending", "qc_passed", "encoding", "delivered"]
+    asset_by_status = {s: sum(1 for a in ASSETS if a.get("status") == s) for s in asset_statuses}
+
+    job_statuses = ["queued", "processing", "delivered", "failed"]
+    job_by_status = {s: sum(1 for j in DELIVERY_JOBS if j.get("status") == s) for s in job_statuses}
+
+    delivered = job_by_status["delivered"]
+    failed = job_by_status["failed"]
+    terminal = delivered + failed
+    delivery_rate = None if terminal == 0 else f"{(delivered / terminal) * 100:.1f}%"
+
+    return jsonify({
+        "assets": {
+            "total": len(ASSETS),
+            "by_status": asset_by_status,
+        },
+        "jobs": {
+            "total": len(DELIVERY_JOBS),
+            "by_status": job_by_status,
+        },
+        "delivery_rate": delivery_rate,
+    }), 200
     return
 
 if __name__ == "__main__":
