@@ -236,6 +236,18 @@ def route_asset(asset_id):
     
     return jsonify({"jobs": jobs, "platforms_matched": len(matches), "platforms_skipped": skips}), 200
 
+@app.route("/api/assets/<asset_id>/route-preview", methods=["POST"])
+def create_route_preview(asset_id):
+    logger.info(f"Creating route preview for asset {asset_id}")
+    asset = get_asset_by_id(asset_id)
+    if not asset:
+        return jsonify({"error": "Asset not found"}), 404
+    if asset.get("status") != "qc_passed":
+        return jsonify({"error": "Asset must have status 'qc_passed' to be routed"}), 400
+
+    matches, skips = get_platform_matches(asset)
+    return jsonify({"platforms_matched": len(matches), "platforms_skipped": skips}), 200
+
 @app.route("/api/jobs/<job_id>/status", methods=["PUT"])
 def update_job_status(job_id):
     logger.info("Updating job status")
