@@ -128,12 +128,12 @@ def get_platform_matches(asset):
         matches.append(platform["id"])
     return matches, skips
 
-def create_delivery_job(asset, platform):
+def create_delivery_job(asset_id, platform_id):
     now = get_timestamp()
     job = {
-        "id": uuid4(),
-        "asset_id": asset["id"],
-        "platform_id": platform["id"],
+        "id": str(uuid4()),
+        "asset_id": asset_id,
+        "platform_id": platform_id,
         "status": "queued",
         "created_at": now,
         "updated_at": now
