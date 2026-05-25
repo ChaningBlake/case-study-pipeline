@@ -52,7 +52,7 @@ def filter_assets(assets, status, territory, search):
         ]
     if search:
         result = [asset for asset in result
-            if search in asset["title"].lower()
+            if search.lower() in asset["title"].lower()
         ]
     return result
 
