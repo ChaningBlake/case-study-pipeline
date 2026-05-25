@@ -246,9 +246,9 @@ def update_job_status(job_id):
         return jsonify({"error": "Job not found"}), 404
     
     if status not in VALID_STATES:
-        return jsonify({"error": f"{status} is not a valid status: {VALID_STATES}"})
+        return jsonify({"error": f"{status} is not a valid status: {VALID_STATES}"}), 400
     if (job["status"], status) not in VALID_TRANSITIONS:
-        return jsonify({"error": f"Transition from {job['status']} to {status} not permitted"})
+        return jsonify({"error": f"Transition from {job['status']} to {status} not permitted"}), 400
 
     # Validated new_status, safe to update
     job["status"] = status
