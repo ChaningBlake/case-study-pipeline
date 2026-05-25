@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 ASSETS = []
 PLATFORMS = []
+DELIVERY_JOBS = []
 
 # --- HElPER FUNCTIONS ---
 def load_seed_data():
@@ -66,6 +67,83 @@ def build_asset(asset):
 def get_timestamp():
     return datetime.now(timezone.utc).isoformat()
 
+def create_skip(reason, platform):
+    return {
+        "platform_id": platform.get("id"),
+        "platform_name": platform.get("name"),
+        "reason": reason
+    }
+
+def is_resolution_compatible(asset, platform):
+    res_map = {
+        "4K": 3,
+        "1080p": 2,
+        "720p": 1
+    }
+
+    # Not a valid resolution
+    if asset["resolution"] not in res_map:
+        logger.warning(f"{asset['resolution']} is not a valid resolution")
+        return False
+
+    return res_map[asset["resolution"]] <= res_map[platform["max_resolution"]]
+
+def territory_is_valid(asset, platform):
+    return asset["territory"] == "GLOBAL" \
+        or "GLOBAL" in platform["territories"] \
+        or asset["territory"] in platform["territories"]
+
+def get_platform_matches(asset):
+    matches = []
+    skips = []
+    
+    for platform in PLATFORMS:
+        # Only append first failing rule
+        if asset["format"] not in platform["accepted_formats"]:
+            skips.append(create_skip(
+                f"Format {asset['format']} not accepted (platform requires {platform['accepted_formats']})",
+                platform
+            ))
+            continue
+        if not is_resolution_compatible(asset, platform):
+            skips.append(create_skip(
+                f"Resolution {asset['resolution']} not accepted (platform supports a max resolution of {platform['max_resolution']})",
+                platform
+            ))
+            continue
+        if platform["requires_captions"] and not asset["has_captions"]:
+            skips.append(create_skip(
+                f"Platform requires captions",
+                platform
+            ))
+            continue
+        if not territory_is_valid(asset, platform):
+            skips.append(create_skip(
+                f"Territory {asset['territory']} not accepted (platform requires {platform['territories']})",
+                platform
+            ))
+            continue
+
+        # Asset is compatible with platform
+        matches.append(platform["id"])
+    return matches, skips
+
+def create_delivery_job(asset, platform):
+    now = get_timestamp()
+    job = {
+        "id": uuid4(),
+        "asset_id": asset["id"],
+        "platform_id": platform["id"],
+        "status": "queued",
+        "created_at": now,
+        "updated_at": now
+    }
+
+    DELIVERY_JOBS.append(job)
+    return job["id"] 
+
+def get_asset_by_id(asset_id):
+    return next(filter(lambda x: x["id"] == asset_id, ASSETS), None)
 
 # --- ROUTES ---
 @app.route("/api/assets", methods=["GET"])
@@ -82,9 +160,9 @@ def get_assets():
     return jsonify({"assets": assets, "total": len(assets)}), 200
 
 @app.route("/api/assets/<asset_id>", methods=["GET"])
-def get_asset_by_id(asset_id):
+def get_asset(asset_id):
     logger.info(f"Getting Asset by ID: {asset_id}")
-    asset = next(filter(lambda x: x["id"] == asset_id, ASSETS), None)
+    asset = get_asset_by_id(asset_id)
 
     if asset:
         return jsonify({"asset": asset}), 200
@@ -108,7 +186,18 @@ def register_asset():
 
 @app.route("/api/assets/<asset_id>/route", methods=["POST"])
 def route_asset(asset_id):
-    return
+    asset = get_asset_by_id(asset_id)
+    if not asset:
+        return jsonify({"error": "Asset not found"}), 404
+    if asset.get("status") != "qc_passed":
+        return jsonify({"error": "Asset must have status 'qc_passed' to be routed"}), 400
+
+    jobs = []   
+    matches, skips = get_platform_matches(asset)
+    for match in matches:
+        jobs.append(create_delivery_job(asset_id, platform_id=match))
+    
+    return jsonify({"jobs": jobs, "platforms_matched": len(matches), "platforms_skipped": skips}), 200
 
 @app.route("/api/jobs/<job_id>/status", methods=["PUT"])
 def update_job_status(job_id):
