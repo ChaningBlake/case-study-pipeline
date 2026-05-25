@@ -1,0 +1,122 @@
+[
+    {
+        "id": "ASSET-001",
+        "title": "Northern Lights - S01E01",
+        "format": "MOV",
+        "resolution": "4K",
+        "territory": "GLOBAL",
+        "caption_format": "SRT",
+        "has_captions": true,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-002",
+        "title": "The Reckoning - Feature Film",
+        "format": "MXF",
+        "resolution": "4K",
+        "territory": "GLOBAL",
+        "caption_format": "TTML",
+        "has_captions": true,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-003",
+        "title": "Solar Circuit - S02E05",
+        "format": "MP4",
+        "resolution": "1080p",
+        "territory": "UK",
+        "caption_format": null,
+        "has_captions": false,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-004",
+        "title": "Voices of the Valley - Doc",
+        "format": "MXF",
+        "resolution": "1080p",
+        "territory": "DE",
+        "caption_format": "SRT",
+        "has_captions": true,
+        "status": "ingested"
+    },
+    {
+        "id": "ASSET-005",
+        "title": "Harbor - S01E05",
+        "format": "MOV",
+        "resolution": "4K",
+        "territory": "US",
+        "caption_format": "VTT",
+        "has_captions": true,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-006",
+        "title": "Open Road - S04E02",
+        "format": "MP4",
+        "resolution": "1080p",
+        "territory": "US",
+        "caption_format": null,
+        "has_captions": false,
+        "status": "encoding"
+    },
+    {
+        "id": "ASSET-007",
+        "title": "Ironclad - S03E01",
+        "format": "MXF",
+        "resolution": "4K",
+        "territory": "JP",
+        "caption_format": "SRT",
+        "has_captions": true,
+        "status": "qc_pending"
+    },
+    {
+        "id": "ASSET-008",
+        "title": "Soft Departure - Documentary",
+        "format": "MXF",
+        "resolution": "1080p",
+        "territory": "FR",
+        "caption_format": "SRT",
+        "has_captions": true,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-009",
+        "title": "City Lights - S01E03",
+        "format": "MP4",
+        "resolution": "1080p",
+        "territory": "UK",
+        "caption_format": "VTT",
+        "has_captions": true,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-010",
+        "title": "Distant Shore - S01E09",
+        "format": "MXF",
+        "resolution": "1080p",
+        "territory": "KR",
+        "caption_format": null,
+        "has_captions": false,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-011",
+        "title": "Wide Open - S03E12",
+        "format": "MOV",
+        "resolution": "4K",
+        "territory": "US",
+        "caption_format": null,
+        "has_captions": false,
+        "status": "qc_passed"
+    },
+    {
+        "id": "ASSET-012",
+        "title": "Fractured Light - Feature Film",
+        "format": "MXF",
+        "resolution": "4K",
+        "territory": "GLOBAL",
+        "caption_format": "SCC",
+        "has_captions": true,
+        "status": "qc_passed"
+    }
+]

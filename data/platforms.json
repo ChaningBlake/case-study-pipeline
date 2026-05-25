@@ -1,0 +1,73 @@
+[
+    {
+        "id": "PLAT-001",
+        "name": "AppleTV+ Global",
+        "accepted_formats": [
+            "MOV",
+            "MXF"
+        ],
+        "max_resolution": "4K",
+        "requires_captions": true,
+        "territories": [
+            "GLOBAL"
+        ],
+        "webhook_url": "http://localhost:5001"
+    },
+    {
+        "id": "PLAT-002",
+        "name": "iTunes US Store",
+        "accepted_formats": [
+            "MOV",
+            "MP4",
+            "MXF"
+        ],
+        "max_resolution": "4K",
+        "requires_captions": false,
+        "territories": [
+            "US"
+        ],
+        "webhook_url": "http://localhost:5001"
+    },
+    {
+        "id": "PLAT-003",
+        "name": "Regional Partner UK",
+        "accepted_formats": [
+            "MP4"
+        ],
+        "max_resolution": "1080p",
+        "requires_captions": false,
+        "territories": [
+            "UK"
+        ],
+        "webhook_url": "http://localhost:5001"
+    },
+    {
+        "id": "PLAT-004",
+        "name": "VOD Asia Pacific",
+        "accepted_formats": [
+            "MXF",
+            "MP4"
+        ],
+        "max_resolution": "4K",
+        "requires_captions": true,
+        "territories": [
+            "JP",
+            "KR"
+        ],
+        "webhook_url": "http://localhost:5001"
+    },
+    {
+        "id": "PLAT-005",
+        "name": "Broadcast Central EU",
+        "accepted_formats": [
+            "MXF"
+        ],
+        "max_resolution": "1080p",
+        "requires_captions": true,
+        "territories": [
+            "DE",
+            "FR"
+        ],
+        "webhook_url": "http://localhost:5001"
+    }
+]
