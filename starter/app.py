@@ -6,6 +6,7 @@ import sys
 from uuid import uuid4
 from datetime import datetime, timezone
 import requests
+import threading
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).parents[1] # ../../.
@@ -161,10 +162,7 @@ def get_job_by_id(job_id):
 def get_platform_by_id(platform_id):
     return next(filter(lambda x: x["id"] == platform_id, PLATFORMS), None)
 
-def post_webhook(webhook_url, payload):
-    if not webhook_url:
-        return
-
+def queue_webhook_post(webhook_url, payload):
     try:
         logger.info(f"Attempting post to {webhook_url}")
         response = requests.post(
@@ -175,11 +173,22 @@ def post_webhook(webhook_url, payload):
         )
 
         response.raise_for_status() 
+        logger.info(f"Post to {webhook_url} successful")
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error posting {webhook_url}: {str(e)}")
+    return
+
+def post_webhook(webhook_url, payload):
+    if not webhook_url:
         return
-    
+
+    try:
+        thread = threading.Thread(target=queue_webhook_post, args=(webhook_url, payload))
+        thread.daemon = True  # Thread won't block app shutdown
+        thread.start()
+    except Exception as e:
+        logger.error(f"Error queueing webhook post: {str(e)}")
 
 # --- ROUTES ---
 @app.route("/api/assets", methods=["GET"])
