@@ -1,7 +1,7 @@
 # Case Study Pipeline
 
 This project shows a mock flask application that handles content distribution for the Original Content Services team.
-See 'Getting Started' below to run the project, or .
+See 'Getting Started' below to run the project.
 
 Note: Logging has been redirected to stdout for development purposes. Claude was used to create `test_app.py` from the Submission Criteria in the document.
 
@@ -46,7 +46,7 @@ I would add authentication to these endpoints to ensure only allowed parties hav
 ### Layered Architecture
 I would consider introducing a layered architecture with dependency injection. These layers often consist of a route, logic, and data layer. This helps keep business logic and data access patterns loosely coupled. If we choose to change how we store data in the future, injecting a different data layer makes this an easier change. 
 
-### Asynch Queue
+### Async Queue
 For the purposes of this mock application, I stored DeliveryJobs in memory and used the threading module to run posts
 to webhooks asynchronously. However, this is not ideal for a production application. If the application crashed these jobs could be lost. Metadata about DeliveryJobs could be stored in a table, and the job could be submitted to a queue (e.g. AWS SQS).
 
