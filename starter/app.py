@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify
-from pathlib import Path
 import json
 import logging
 import sys
-from uuid import uuid4
-from datetime import datetime, timezone
-import requests
 import threading
+from datetime import datetime, timezone
+from pathlib import Path
+from uuid import uuid4
+
+import requests
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).parents[1] # ../../.
